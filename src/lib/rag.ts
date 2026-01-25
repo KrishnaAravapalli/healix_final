@@ -1,9 +1,9 @@
 
 import { GoogleGenerativeAI } from "@google/generative-ai";
-import fs from "fs";
-import path from "path";
+// @ts-ignore - Importing from outside src is fine with resolveJsonModule but might error in editor
+import embeddingsRaw from "../../rag/embeddings.json";
 
-// Initialize Gemini (lazy load inside function to ensure env is ready)
+// Initialize Gemini (lazy load)
 
 interface EmbeddingItem {
     text: string;
@@ -15,25 +15,8 @@ interface EmbeddingItem {
     embedding: number[];
 }
 
-let cachedEmbeddings: EmbeddingItem[] | null = null;
-
-function loadEmbeddings(): EmbeddingItem[] {
-    if (cachedEmbeddings) return cachedEmbeddings;
-
-    try {
-        const filePath = path.join(process.cwd(), "rag", "embeddings.json");
-        if (!fs.existsSync(filePath)) {
-            console.error("❌ Embeddings file not found at:", filePath);
-            return [];
-        }
-        const raw = fs.readFileSync(filePath, "utf-8");
-        cachedEmbeddings = JSON.parse(raw);
-        return cachedEmbeddings || [];
-    } catch (error) {
-        console.error("Failed to load embeddings:", error);
-        return [];
-    }
-}
+// Cast the imported JSON to the interface
+const embeddingsData = embeddingsRaw as unknown as EmbeddingItem[];
 
 function cosineSimilarity(vecA: number[], vecB: number[]): number {
     let dotProduct = 0;
@@ -62,15 +45,14 @@ export async function getRelevantContext(query: string): Promise<string> {
         const result = await model.embedContent(query);
         const queryEmbedding = result.embedding.values;
 
-        // 2. Load Data
-        const embeddings = loadEmbeddings();
-        if (embeddings.length === 0) {
+        // 2. Search using imported data
+        if (!embeddingsData || embeddingsData.length === 0) {
             console.warn("No embeddings loaded for RAG.");
             return "";
         }
 
         // 3. Search
-        const scored = embeddings.map(item => ({
+        const scored = embeddingsData.map(item => ({
             item,
             score: cosineSimilarity(queryEmbedding, item.embedding)
         }));
