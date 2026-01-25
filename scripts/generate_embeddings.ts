@@ -67,7 +67,7 @@ async function main() {
 
     log(`Loaded ${data.intents.length} intents.`);
 
-    const genAI = new GoogleGenerativeAI(GEMINI_API_KEY);
+    const genAI = new GoogleGenerativeAI(GEMINI_API_KEY as string);
     const model = genAI.getGenerativeModel({ model: MODEL_NAME });
 
     // Flatten documents structure for processing
