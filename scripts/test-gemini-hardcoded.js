@@ -1,7 +1,7 @@
 
 import { GoogleGenerativeAI } from "@google/generative-ai";
 
-const GEMINI_API_KEY = "AIzaSyBOsI3P9rYr7bD2XhdXWUjsIxWD8PiGXD8";
+
 
 async function testHardcoded() {
     console.log("Testing with HARDCODED key:", GEMINI_API_KEY);
